@@ -1,0 +1,203 @@
+Tiendas D1
+
+*Estrategia de Pruebas
+
+**Nivel de pruebas:
+
+Sistema: Validar el flujo completo en el e-commerce de tiendas D1.
+
+Aceptación: Validar que los usuarios puedan completar su proceso de compra según sus necesidades.
+
+**Tipo de prueba:
+
+Caja negra: No nos interesa cómo funciona el sistema internamente, solo las entradas y salidas.
+
+**Técnicas utilizadas:
+
+Prueba de tabla de decisión: Para modelar los diferentes tipos de cliente y sus comportamientos.
+
+Prueba de transición de estados: Para modelar las diferentes etapas del carrito (selección producto → revisión carrito → pago).
+
+Pruebas basadas en caso de uso: Para cubrir los flujos críticos de negocio.
+
+
+*Regla de negocio y/o criterio de aceptación
+
+El usuario está registrado o puede comprar como invitado.
+
+La página es funcional en dispositivos móviles y de escritorio.
+
+El pago puede hacerse con tarjeta, efectivo contra entrega o transferencia.
+
+El sitio muestra ofertas, novedades y productos comunes en secciones diferenciadas.
+
+Hay un botón de “asesoría de recetas” que redirige a un chatbot o formulario.
+
+Las promociones por volumen se aplican automáticamente en el carrito.
+
+Solo se puede agregar dos promociones por compra (CA)
+
+Se puede agregar un máximo de 50 productos por compra general (CA)
+
+*Tipos de Cliente y Flujos
+
+**Tipo de Cliente	**Descripción	**Flujo Principal
+Llevar productos por necesidad	Compra productos variados según su necesidad inmediata.	Selección general → Carrito → Pago
+Llevar solo ofertas	Solo agrega productos de sección "Ofertas"	Sección Ofertas → Agregar → Carrito → Pago
+Llevar solo novedades	Solo agrega productos de sección "Novedades"	Sección Novedades → Agregar → Carrito → Pago
+Necesita asesoría	Consulta una receta → Compra los productos sugeridos	Asesoría → Productos sugeridos → Carrito → Pago
+Compra diaria	Compra 1 o 2 unidades para consumo diario	Selección rápida → Carrito → Pago
+Compra mensual	Compra productos al por mayor para abastecimiento	Bulk de productos → Carrito → Pago
+
+
+*Casos de prueba BDD
+
+**Feature: Compra general de productos por necesidad
+  Como cliente de Tiendas D1
+  Quiero agregar productos variados al carrito
+  Para comprarlos y recibirlos a domicilio
+
+  Scenario: Compra exitosa de productos variados
+    Given que el cliente accede a la página principal "https://domicilios.tiendasd1.com/"
+    When selecciona los productos "Arroz Diana 500g", "Aceite Premier 1L" y "Galletas Festival 12und"
+    And agrega los productos al carrito
+    And procede al pago
+    And completa la información de entrega con dirección "Calle 123 #45-67, Bogotá"
+    And selecciona método de pago "Tarjeta de crédito"
+    Then el sistema confirma la compra exitosamente con número de pedido
+
+  Scenario: Intento de compra sin productos en carrito
+    Given que el cliente accede a la página principal "https://domicilios.tiendasd1.com/"
+    When intenta proceder al pago sin agregar productos
+    Then el sistema muestra un mensaje "Tu carrito está vacío"
+
+**Feature: Compra exclusiva de productos en oferta
+  Como cliente cazador de ofertas
+  Quiero comprar solo productos en promoción
+  Para ahorrar en mi compra
+
+  Scenario: Compra de productos en oferta con descuento aplicado
+    Given que el cliente accede a la sección "Ofertas" desde el menú principal
+    When selecciona el producto "Cereal Chocapic 500g" con descuento del 20%
+    And agrega el producto al carrito
+    And procede al pago
+    And elige "Pago contra entrega"
+    Then el sistema aplica el descuento y muestra el precio final actualizado
+    And la compra se confirma exitosamente
+
+  Scenario: Agregar producto sin oferta en sección "Ofertas"
+    Given que el cliente accede a la sección "Ofertas"
+    When selecciona el producto "Yogurt Alpina Natural 1L" sin descuento visible
+    Then el sistema muestra un mensaje de advertencia "Este producto no tiene oferta activa"
+
+
+**Feature: Compra exclusiva de productos nuevos
+  Como cliente explorador de novedades
+  Quiero comprar solo productos de la sección "Novedades"
+  Para probar nuevos productos
+
+  Scenario: Compra de productos nuevos
+    Given que el cliente accede a la sección "Novedades" desde el menú
+    When selecciona el producto "Galletas Oreo Brownie 10und"
+    And agrega el producto al carrito
+    And procede al pago
+    And elige método "PSE - Pago seguro en línea"
+    Then la compra se confirma exitosamente
+
+  Scenario: Producto nuevo no disponible
+    Given que el cliente accede a la sección "Novedades"
+    When intenta seleccionar el producto "Chocolatina Jet Extra" marcado como "Agotado"
+    Then el sistema muestra el mensaje "Producto no disponible"
+
+**Feature: Asesoría de recetas y compra sugerida
+  Como cliente que busca inspiración de cocina
+  Quiero recibir asesoría de recetas
+  Para luego comprar los ingredientes necesarios
+
+  Scenario: Compra tras asesoría de receta
+    Given que el cliente accede a la sección "Recetas y asesoría"
+    When solicita la receta "Arroz con Pollo"
+    And acepta los productos sugeridos: "Arroz Diana 500g", "Pollo entero congelado", "Verduras mixtas 500g"
+    And agrega los productos al carrito
+    And procede al pago
+    Then la compra se confirma exitosamente
+
+  Scenario: Solicitud de asesoría sin respuesta
+    Given que el cliente accede a la sección "Recetas y asesoría"
+    When solicita la receta "Arroz con Pollo"
+    And no recibe respuesta en 10 segundos
+    Then el sistema muestra el mensaje "Asesoría no disponible en este momento, intente más tarde"
+
+**Feature: Compra diaria por unidades
+  Como cliente que compra día a día
+  Quiero comprar pequeñas cantidades
+  Para consumo inmediato
+
+  Scenario: Compra de una unidad de producto
+    Given que el cliente accede a la tienda online
+    When selecciona el producto "Leche Alquería Entera 1L"
+    And agrega 1 unidad al carrito
+    And procede al pago
+    And paga usando "Nequi"
+    Then la compra se confirma exitosamente
+
+  Scenario: Intentar comprar producto sin stock
+    Given que el cliente accede a la tienda online
+    When intenta agregar el producto "Pan Tajado Bimbo" que está sin stock
+    Then el sistema muestra el mensaje "Producto no disponible"
+
+
+**Feature: Compra mensual por mayor
+  Como cliente que compra al por mayor
+  Quiero abastecerme para todo el mes
+  Para evitar compras frecuentes
+
+  Scenario: Compra por volumen con descuentos aplicados
+    Given que el cliente accede a la tienda online
+    When selecciona "Papel higiénico Familia 30 rollos" y "Detergente Ariel 5kg"
+    And agrega cantidades superiores a 10 unidades por producto
+    And procede al pago
+    Then el sistema aplica automáticamente los descuentos por volumen
+    And la compra se confirma exitosamente
+
+  Scenario: Superar límite máximo de compra permitido
+    Given que el cliente accede a la tienda online
+    When intenta agregar 101 unidades del producto "Aceite Premier 1L"
+    Then el sistema muestra el mensaje "Límite máximo de compra alcanzado (100 unidades)"
+
+* Que flujos automatizar y que pruebas damos prioridad (Tomar en cuenta que son supuesto sin tomar en cuenta el modelo de ciclo de vida , tiempos , costo, regulación y riesgos ahi podría cambiar todo)
+
+
+**Escenario	**Automatizable	**Comentario                           **Prioridad
+Compra general exitosa	✅	Flujo funcional principal                 SI
+Carrito vacío	✅	Validación crítica                                SI
+Compra solo ofertas	✅	Promociones deben ser testeadas           NO
+Producto sin oferta en ofertas	❌	Control de etiquetas de promoción SI
+Compra de novedades	❌	Flujo de nuevos lanzamientos              NO
+Producto nuevo agotado	✅	Alerta de disponibilidad                  SI
+Asesoría de receta éxito	❌ Parcial	Depende de API/Integraciones NO
+Asesoría sin respuesta	❌ Parcial	Timeout controlable                  NO
+Compra diaria	✅	Caso estable                                         SI
+Sin stock	✅	Manejo de errores clásico                            SI
+Compra mensual	✅	Flujo mayorista estable                              NO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
