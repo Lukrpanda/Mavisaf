@@ -26,4 +26,17 @@ export class CheckOutCompraPage {
     async ingresarCodigo(codigo: string){
         await this.txtcodigo.fill(codigo);
     }
+
+    async faltaapellido(nombre: string){
+        await this.txtnombre.fill(nombre);
+
+
+    }
+
+    async faltacodigo(nombre: string, apellido: string){
+
+        await this.txtnombre.fill(nombre);
+        await this.txtapellido.fill(apellido);
+    }
+        
 }
