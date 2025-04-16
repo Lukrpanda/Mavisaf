@@ -22,6 +22,7 @@ test.describe('Realizar la compra de un producto productos', () => {
             const logincomprapage = new LoginCompraPage(page);
             await logincomprapage.ingresarUsuario('standard_user');
             await logincomprapage.ingresarPassword('secret_sauce');
+            
         
         //await page.locator('[data-test="username"]').fill('standard_user')
         //await page.locator('[data-test="password"]').fill('secret_sauce')
